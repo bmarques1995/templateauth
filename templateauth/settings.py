@@ -11,10 +11,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import configparser
+import pymysql
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+config = configparser.ConfigParser()
+config.read(BASE_DIR / "env_vars.ini")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -22,11 +26,38 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-8a=f^8l3s%umc1!91chc-w#b_l7_peytc&6dn81hu_v)aem0$x'
 
+MYSQL_DB_NAME : str = config.get('MYSQL', 'db_name')
+MYSQL_DB_USER : str = config.get('MYSQL', 'db_user')
+MYSQL_DB_PASSWORD : str = config.get('MYSQL', 'db_password')
+
+RUN_MODE = config.get('RUN_INFO', 'mode').lower()
+
+null_bytes = b'\x00' * 32
+null_bytes_16 = b'\x00' * 16
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+# SECURITY WARNING: keep the secret key used in production secret!
+
+SECRET_KEY = 'django-insecure-obw@!%-pw2&+q#n!$!y$*lihc(7m(!9#3v4tpx+hxp3+=s-aj#'
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = RUN_MODE == 'debug'
 
 ALLOWED_HOSTS = []
 
+pymysql.install_as_MySQLdb()
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': MYSQL_DB_NAME,
+        'USER': MYSQL_DB_USER,
+        'PASSWORD': MYSQL_DB_PASSWORD,
+        'HOST': 'localhost',
+        'PORT': 3306
+    }
+}
 
 # Application definition
 
@@ -69,18 +100,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'templateauth.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
